@@ -168,6 +168,55 @@ body.dark #whiteboard {
     background: #0b1220;
 }
 
+.inquiry-section {
+    margin-top: 28px;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 16px;
+}
+
+.inquiry-form {
+    margin-top: 12px;
+    display: grid;
+    gap: 8px;
+}
+
+.inquiry-form label {
+    color: var(--text);
+    font-size: 0.92rem;
+}
+
+.inquiry-form input,
+.inquiry-form textarea {
+    width: 100%;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 10px 12px;
+    font: inherit;
+    color: var(--text);
+    background: transparent;
+}
+
+.inquiry-form textarea {
+    resize: vertical;
+    min-height: 120px;
+}
+
+.inquiry-form button {
+    margin-top: 4px;
+    border: none;
+    border-radius: 10px;
+    background: var(--button-bg);
+    color: #ffffff;
+    font: inherit;
+    padding: 12px 14px;
+    cursor: pointer;
+}
+
+.inquiry-form button:hover {
+    background: var(--button-hover);
+}
+
 @media (max-width: 640px) {
     .container {
         padding: 20px;

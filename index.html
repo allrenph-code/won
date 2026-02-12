@@ -32,6 +32,21 @@
             </div>
             <canvas id="whiteboard" width="900" height="500" aria-label="드로잉 화이트보드"></canvas>
         </section>
+        <section class="inquiry-section">
+            <h2>제휴 문의</h2>
+            <form class="inquiry-form" action="https://formspree.io/f/xojnjgbl" method="POST">
+                <input type="hidden" name="_subject" value="새 제휴 문의가 도착했습니다">
+                <label for="partner-name">이름</label>
+                <input id="partner-name" name="name" type="text" placeholder="홍길동" required>
+                <label for="partner-email">이메일</label>
+                <input id="partner-email" name="email" type="email" placeholder="name@company.com" required>
+                <label for="partner-company">회사명</label>
+                <input id="partner-company" name="company" type="text" placeholder="회사명을 입력해 주세요">
+                <label for="partner-message">문의 내용</label>
+                <textarea id="partner-message" name="message" rows="5" placeholder="제휴 제안 내용을 입력해 주세요." required></textarea>
+                <button type="submit">문의 보내기</button>
+            </form>
+        </section>
     </div>
     <script src="main.js"></script>
 </body>
