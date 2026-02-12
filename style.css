@@ -217,6 +217,17 @@ body.dark #whiteboard {
     background: var(--button-hover);
 }
 
+.comments-section {
+    margin-top: 28px;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 16px;
+}
+
+#disqus_thread {
+    margin-top: 12px;
+}
+
 @media (max-width: 640px) {
     .container {
         padding: 20px;
