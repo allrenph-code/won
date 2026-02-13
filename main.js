@@ -1,150 +1,154 @@
-document.addEventListener('DOMContentLoaded', () => {
-    const generateBtn = document.getElementById('generate');
-    const numberSpans = document.querySelectorAll('.number');
-    const themeToggle = document.getElementById('theme-toggle');
-    const canvas = document.getElementById('whiteboard');
-    const clearBoardBtn = document.getElementById('clear-board');
-    const saveBoardBtn = document.getElementById('save-board');
-    const penColorInput = document.getElementById('pen-color');
-    const context = canvas.getContext('2d');
+const MODEL_URL = "https://teachablemachine.withgoogle.com/models/Fkh7frPks/";
 
-    let drawing = false;
-    let lastPoint = null;
+const imageInput = document.getElementById("image-input");
+const statusText = document.getElementById("status");
+const labelContainer = document.getElementById("label-container");
+const topResult = document.getElementById("top-result");
+const previewImage = document.getElementById("preview-image");
+const previewContainer = document.getElementById("preview-container");
 
-    generateBtn.addEventListener('click', () => {
-        const lottoNumbers = generateLottoNumbers();
-        displayNumbers(lottoNumbers);
-    });
+let model;
+let labelRows = [];
 
-    function generateLottoNumbers() {
-        const numbers = new Set();
-        while (numbers.size < 6) {
-            const randomNumber = Math.floor(Math.random() * 45) + 1;
-            numbers.add(randomNumber);
+imageInput.addEventListener("change", handleFileChange);
+window.addEventListener("DOMContentLoaded", initModel);
+
+async function initModel() {
+    try {
+        setStatus("모델을 불러오는 중입니다...");
+        const modelURL = MODEL_URL + "model.json";
+        const metadataURL = MODEL_URL + "metadata.json";
+        model = await tmImage.load(modelURL, metadataURL);
+
+        buildLabelRows(model.getClassLabels());
+        setStatus("모델 준비 완료. 사진을 선택해 주세요.");
+    } catch (error) {
+        console.error(error);
+        setStatus("모델 로딩에 실패했습니다. 잠시 후 다시 시도해 주세요.");
+    }
+}
+
+async function handleFileChange(event) {
+    const file = event.target.files?.[0];
+    if (!file) {
+        return;
+    }
+
+    if (!model) {
+        setStatus("모델이 아직 준비되지 않았습니다. 잠시 후 다시 시도해 주세요.");
+        return;
+    }
+
+    setStatus("이미지를 불러오는 중입니다...");
+
+    try {
+        const imageUrl = window.URL.createObjectURL(file);
+        previewImage.src = imageUrl;
+
+        await waitImageLoaded(previewImage);
+        previewImage.hidden = false;
+
+        const placeholder = previewContainer.querySelector(".placeholder");
+        if (placeholder) {
+            placeholder.hidden = true;
         }
-        return Array.from(numbers).sort((a, b) => a - b);
+
+        setStatus("분석 중입니다...");
+        const predictions = await model.predict(previewImage);
+        renderPredictions(predictions);
+        setStatus("분석 완료");
+
+        window.URL.revokeObjectURL(imageUrl);
+    } catch (error) {
+        console.error(error);
+        setStatus("이미지 분석에 실패했습니다. 다른 사진으로 시도해 주세요.");
     }
+}
 
-    function displayNumber(span, number) {
-        span.textContent = number;
-        span.style.transform = 'translateY(-10px)';
-        setTimeout(() => {
-            span.style.transform = 'translateY(0)';
-        }, 300);
-    }
-
-    function displayNumbers(numbers) {
-        numberSpans.forEach((span, index) => {
-            setTimeout(() => {
-                displayNumber(span, numbers[index]);
-            }, index * 200);
-        });
-    }
-
-    function applyTheme(isDarkMode) {
-        document.body.classList.toggle('dark', isDarkMode);
-        themeToggle.textContent = isDarkMode ? '라이트모드' : '다크모드';
-        themeToggle.setAttribute('aria-label', `${isDarkMode ? '라이트' : '다크'}모드 전환`);
-        if (!drawing) {
-            resetBoardBackground();
-        }
-    }
-
-    function resetBoardBackground() {
-        context.save();
-        context.fillStyle = document.body.classList.contains('dark') ? '#0b1220' : '#ffffff';
-        context.fillRect(0, 0, canvas.width, canvas.height);
-        context.restore();
-    }
-
-    function resizeCanvas() {
-        const prev = document.createElement('canvas');
-        prev.width = canvas.width;
-        prev.height = canvas.height;
-        prev.getContext('2d').drawImage(canvas, 0, 0);
-
-        const rect = canvas.getBoundingClientRect();
-        canvas.width = Math.max(300, Math.floor(rect.width));
-        canvas.height = Math.max(220, Math.floor(window.innerHeight * 0.42));
-        resetBoardBackground();
-        context.drawImage(prev, 0, 0, prev.width, prev.height, 0, 0, canvas.width, canvas.height);
-    }
-
-    function getPoint(event) {
-        const rect = canvas.getBoundingClientRect();
-        if (event.touches && event.touches[0]) {
-            return {
-                x: event.touches[0].clientX - rect.left,
-                y: event.touches[0].clientY - rect.top
-            };
-        }
-        return {
-            x: event.clientX - rect.left,
-            y: event.clientY - rect.top
-        };
-    }
-
-    function startDrawing(event) {
-        drawing = true;
-        lastPoint = getPoint(event);
-    }
-
-    function draw(event) {
-        if (!drawing) {
+function waitImageLoaded(imageElement) {
+    return new Promise((resolve, reject) => {
+        if (imageElement.complete && imageElement.naturalWidth > 0) {
+            resolve();
             return;
         }
 
-        const point = getPoint(event);
-        context.beginPath();
-        context.moveTo(lastPoint.x, lastPoint.y);
-        context.lineTo(point.x, point.y);
-        context.strokeStyle = penColorInput.value;
-        context.lineWidth = 3;
-        context.lineCap = 'round';
-        context.lineJoin = 'round';
-        context.stroke();
-        lastPoint = point;
-    }
-
-    function endDrawing() {
-        drawing = false;
-        lastPoint = null;
-    }
-
-    function saveBoardImage() {
-        const link = document.createElement('a');
-        link.download = `whiteboard-${new Date().toISOString().slice(0, 19).replace(/[:T]/g, '-')}.png`;
-        link.href = canvas.toDataURL('image/png');
-        link.click();
-    }
-
-    themeToggle.addEventListener('click', () => {
-        const isDarkMode = !document.body.classList.contains('dark');
-        localStorage.setItem('preferred-theme', isDarkMode ? 'dark' : 'light');
-        applyTheme(isDarkMode);
+        imageElement.onload = () => resolve();
+        imageElement.onerror = () => reject(new Error("이미지를 불러올 수 없습니다."));
     });
+}
 
-    clearBoardBtn.addEventListener('click', resetBoardBackground);
-    saveBoardBtn.addEventListener('click', saveBoardImage);
+function renderPredictions(predictions) {
+    const sorted = [...predictions].sort((a, b) => b.probability - a.probability);
+    const top = sorted[0];
+    renderTopResult(top);
 
-    canvas.addEventListener('mousedown', startDrawing);
-    canvas.addEventListener('mousemove', draw);
-    canvas.addEventListener('mouseup', endDrawing);
-    canvas.addEventListener('mouseleave', endDrawing);
-    canvas.addEventListener('touchstart', (event) => {
-        event.preventDefault();
-        startDrawing(event);
-    }, { passive: false });
-    canvas.addEventListener('touchmove', (event) => {
-        event.preventDefault();
-        draw(event);
-    }, { passive: false });
-    canvas.addEventListener('touchend', endDrawing);
+    predictions.forEach((prediction, index) => {
+        const row = labelRows[index];
+        if (!row) {
+            return;
+        }
 
-    window.addEventListener('resize', resizeCanvas);
+        const percent = Math.round(prediction.probability * 100);
+        row.value.textContent = percent + "%";
+        row.fill.style.width = percent + "%";
+    });
+}
 
-    const preferredTheme = localStorage.getItem('preferred-theme');
-    const useDark = preferredTheme ? preferredTheme === 'dark' : window.matchMedia('(prefers-color-scheme: dark)').matches;
-    applyTheme(useDark);
-    resizeCanvas();
-});
+function buildLabelRows(classLabels) {
+    labelContainer.innerHTML = "";
+    labelRows = classLabels.map((label) => {
+        const row = document.createElement("div");
+        row.className = "label-row";
+
+        const head = document.createElement("div");
+        head.className = "label-head";
+
+        const name = document.createElement("span");
+        name.textContent = label;
+
+        const value = document.createElement("span");
+        value.textContent = "0%";
+
+        const bar = document.createElement("div");
+        bar.className = "bar";
+
+        const fill = document.createElement("div");
+        fill.className = "fill " + getTypeClass(label);
+
+        bar.appendChild(fill);
+        head.append(name, value);
+        row.append(head, bar);
+        labelContainer.appendChild(row);
+
+        return { value, fill };
+    });
+}
+
+function renderTopResult(prediction) {
+    const percent = Math.round(prediction.probability * 100);
+    const name = prediction.className;
+
+    const textByType = {
+        dog: `강아지상 ${percent}% - 밝고 친근한 인상이에요.`,
+        cat: `고양이상 ${percent}% - 시크하고 세련된 분위기예요.`,
+        other: `${name} ${percent}% - 독특한 매력이 보여요.`
+    };
+
+    const type = getTypeClass(name);
+    topResult.textContent = textByType[type];
+}
+
+function getTypeClass(label) {
+    const normalized = String(label).toLowerCase();
+    if (normalized.includes("dog") || normalized.includes("강아지") || normalized.includes("개")) {
+        return "dog";
+    }
+    if (normalized.includes("cat") || normalized.includes("고양이") || normalized.includes("냥")) {
+        return "cat";
+    }
+    return "other";
+}
+
+function setStatus(message) {
+    statusText.textContent = message;
+}
