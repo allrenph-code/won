@@ -19,10 +19,12 @@ jobs:
       - name: Prepare static files
         run: |
           mkdir -p _site
-          cp index.html _site/index.html
+          cp *.html _site/
           cp style.css _site/style.css
           cp main.js _site/main.js
           cp ads.txt _site/ads.txt
+          cp robots.txt _site/robots.txt
+          cp sitemap.xml _site/sitemap.xml
 
       - name: Deploy to gh-pages branch
         uses: peaceiris/actions-gh-pages@v4
