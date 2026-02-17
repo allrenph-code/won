@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" role="img" aria-label="Animal Face Lab favicon">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#ffcf70"/>
+      <stop offset="100%" stop-color="#ff8f5a"/>
+    </linearGradient>
+  </defs>
+
+  <rect width="256" height="256" rx="56" fill="url(#bg)"/>
+
+  <path d="M64 84 L94 38 L114 92 Z" fill="#3a2a20"/>
+  <path d="M192 84 L162 38 L142 92 Z" fill="#3a2a20"/>
+
+  <circle cx="128" cy="136" r="78" fill="#fff4de"/>
+
+  <ellipse cx="98" cy="130" rx="11" ry="13" fill="#2f231b"/>
+  <ellipse cx="158" cy="130" rx="11" ry="13" fill="#2f231b"/>
+
+  <path d="M118 158 Q128 168 138 158 Q128 150 118 158 Z" fill="#2f231b"/>
+
+  <path d="M94 160 Q128 192 162 160" fill="none" stroke="#2f231b" stroke-width="9" stroke-linecap="round"/>
+  <path d="M100 166 Q128 188 156 166" fill="none" stroke="#ffffff" stroke-opacity="0.35" stroke-width="4" stroke-linecap="round"/>
+</svg>
